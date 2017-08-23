@@ -9,6 +9,8 @@ from random import random
 import numpy as np
 import os
 here = os.path.dirname(os.path.realpath(__file__))
+HOME = os.getenv('HOME')
+
 
 
 def make_request(url):
@@ -35,6 +37,7 @@ def parse_data(RAW_DATA,tmp='/tmp/data.txt'):
 
 base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
+folder = HOME+'/Documents/WeatherData/'
 
 
 f_stations = open('stations.csv','w')
@@ -73,10 +76,12 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
                   lon = float(lon['title'])
             print(ind,lat,lon,'',url_download)
             f_stations.write(str(ind)+','+str(lat)+','+str(lon))
-            f_stations.write(url_download'\n')
+            f_stations.write(url_download+'\n')
             RAW_DATA = make_request(url_download).replace('"','')
             SAVE_DATA = '\n'.join(RAW_DATA.splitlines()[4:])
-            f_out = open(str(ind)+'.csv','w')
+            f_out = open(folder+str(ind)+'.csv','a')
             f_out.write(SAVE_DATA)
             f_out.close()
+            twait = 10*random()
+            sleep(twait)
 f_stations.close()
