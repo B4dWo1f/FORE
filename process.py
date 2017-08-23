@@ -56,6 +56,7 @@ if __name__ == '__main__':
 
    files = os.popen('ls %s/*.csv'%(folder)).read()
    files = files.splitlines()
+   #files = ['/home/ngarcia/Documents/WeatherData/3423I.csv']
 
    for fname in files:
       ## Simple sort and uniq to minimize the later operations
@@ -87,6 +88,7 @@ if __name__ == '__main__':
          l = d.strftime(fmt)+s+str(t)+s+str(w)+s+str(wd)+s+str(b)+s+str(bd)
          l += s+str(p)+s+str(pr)+s+str(prt)+s+str(h)
          f.write(l+'\n')
-         #print(d,t,w,wd,b,bd,p,pr,prt,h)
+         #print(i,d,t,w,wd,b,bd,p,pr,prt,h)
          #print(l)
       f.close()
+      #print('')

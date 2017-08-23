@@ -4,8 +4,8 @@
 import datetime as dt
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
-from time import sleep
-from random import random
+#from time import sleep
+#from random import random
 import numpy as np
 import os
 here = os.path.dirname(os.path.realpath(__file__))
@@ -38,6 +38,7 @@ def parse_data(RAW_DATA,tmp='/tmp/data.txt'):
 base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
 folder = HOME+'/Documents/WeatherData/'
+s = ', '
 
 
 f_stations = open(here+'/stations.csv','w')
@@ -75,13 +76,13 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
                for lon in S_down.find_all('abbr',class_='longitude'):
                   lon = float(lon['title'])
             #print(ind,lat,lon,'',url_download)
-            f_stations.write(str(ind)+','+str(lat)+','+str(lon))
-            f_stations.write(url_download+'\n')
+            f_stations.write(str(ind)+s+str(lat)+s+str(lon))
+            f_stations.write(s+url_download+'\n')
             RAW_DATA = make_request(url_download).replace('"','')
             SAVE_DATA = '\n'.join(RAW_DATA.splitlines()[4:])
             f_out = open(folder+str(ind)+'.csv','a')
             f_out.write(SAVE_DATA+'\n')
             f_out.close()
-            twait = 10*random()
-            sleep(twait)
+            #twait = 10*random()
+            #sleep(twait)
 f_stations.close()
