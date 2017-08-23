@@ -80,7 +80,7 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
             RAW_DATA = make_request(url_download).replace('"','')
             SAVE_DATA = '\n'.join(RAW_DATA.splitlines()[4:])
             f_out = open(folder+str(ind)+'.csv','a')
-            f_out.write(SAVE_DATA)
+            f_out.write(SAVE_DATA+'\n')
             f_out.close()
             twait = 10*random()
             sleep(twait)
