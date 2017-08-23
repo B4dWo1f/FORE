@@ -40,7 +40,7 @@ last_data = base+'/es/eltiempo/observacion/ultimosdatos'
 folder = HOME+'/Documents/WeatherData/'
 
 
-f_stations = open('stations.csv','w')
+f_stations = open(here+'/stations.csv','w')
 
 html_doc = make_request(last_data)
 S = BeautifulSoup(html_doc, 'html.parser')
@@ -49,7 +49,7 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
    for link in a.find_all('a', href=True):
       base_url = 'http://www.aemet.es/es/eltiempo/observacion/'
       com_url = base_url+link['href']
-      print('Doing:',com_url)
+      #print('Doing:',com_url)
       html_doc = make_request(com_url)
       S_region = BeautifulSoup(html_doc, 'html.parser')
       for dato in S_region.find_all('a',class_="estacion_dato"):
@@ -74,7 +74,7 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
                   lat = float(lat['title'])
                for lon in S_down.find_all('abbr',class_='longitude'):
                   lon = float(lon['title'])
-            print(ind,lat,lon,'',url_download)
+            #print(ind,lat,lon,'',url_download)
             f_stations.write(str(ind)+','+str(lat)+','+str(lon))
             f_stations.write(url_download+'\n')
             RAW_DATA = make_request(url_download).replace('"','')

@@ -69,7 +69,7 @@ if __name__ == '__main__':
    
    
       ## Clean repeated/substitute data
-      print('Correcting:',fname,' (%s)'%(D_uniq.shape[0]))
+      #print('Correcting:',fname,' (%s)'%(D_uniq.shape[0]))
       f = open(fname,'w')
       for i in range(D_uniq.shape[0]):
          ind = D_uniq[i]
