@@ -46,9 +46,13 @@ def parse_csv(fname):
 if __name__ == '__main__':
    import os
    import sys
+   now = dt.datetime.now()
+   HOME = os.getenv('HOME')
+   f = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m') + '/'
+
 
    try: folder = sys.argv[1]
-   except IndexError: folder = '/home/ngarcia/Documents/WeatherData'
+   except IndexError: folder = f
 
    fmt = '%d/%m/%Y %H:%M'
    tmp = '/tmp/weather.csv'

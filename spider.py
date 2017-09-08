@@ -10,6 +10,7 @@ import numpy as np
 import os
 here = os.path.dirname(os.path.realpath(__file__))
 HOME = os.getenv('HOME')
+now = dt.datetime.now()
 
 
 
@@ -37,7 +38,8 @@ def parse_data(RAW_DATA,tmp='/tmp/data.txt'):
 
 base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
-folder = HOME+'/Documents/WeatherData/'
+folder = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m') + '/'
+os.system('mkdir -p %s'%(folder))
 s = ', '
 
 
