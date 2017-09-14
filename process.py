@@ -48,7 +48,7 @@ if __name__ == '__main__':
    import sys
    now = dt.datetime.now()
    HOME = os.getenv('HOME')
-   f = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m') + '/'
+   f = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m')
 
 
    try: folder = sys.argv[1]
