@@ -95,4 +95,5 @@ if __name__ == '__main__':
          #print(i,d,t,w,wd,b,bd,p,pr,prt,h)
          #print(l)
       f.close()
+      os.system("sed -i 's/nan//g' %s"%(fname))   # test to remove nan
       #print('')

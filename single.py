@@ -7,7 +7,7 @@
 
 from process import parse_csv
 
-fname = '../../ownCloud/5906X.csv'
+fname = '/home/ngarcia/Documents/WeatherData/2017_09/5906X.csv'
 
 D,T,W,Wd,B,Bd,P,Pr,Prt,H = parse_csv(fname)
 
