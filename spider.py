@@ -40,7 +40,7 @@ base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
 folder = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m') + '/'
 os.system('mkdir -p %s'%(folder))
-s = ', '
+s = ', '   # delimiter for the csv file
 
 
 f_stations = open(here+'/stations.csv','w')
