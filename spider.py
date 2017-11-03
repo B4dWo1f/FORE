@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
+import pandas as pd
 import datetime as dt
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
@@ -82,9 +83,20 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
             f_stations.write(s+url_download+'\n')
             RAW_DATA = make_request(url_download).replace('"','')
             SAVE_DATA = '\n'.join(RAW_DATA.splitlines()[4:])
-            f_out = open(folder+str(ind)+'.csv','a')
-            f_out.write(SAVE_DATA+'\n')
-            f_out.close()
+            with open('/tmp/station.csv','w') as f_out:
+               f_out.write(SAVE_DATA+'\n')
+            old = pd.read_csv(folder+str(ind)+'.csv',delimiter=',',
+                              index_col=0,parse_dates=True,
+                              date_parser=parser,names=names)
+            new = pd.read_csv('/tmp/station.csv',delimiter=',',
+                              index_col=0,parse_dates=True,
+                              date_parser=parser,names=names)
+            DATOS = pd.concat([old,new])
+            DATOS = DATOS.groupby(DATOS.index).mean()
+            exit()
+            #f_out = open(folder+str(ind)+'.csv','a')
+            #f_out.write(SAVE_DATA+'\n')
+            #f_out.close()
             #twait = 10*random()
             #sleep(twait)
 f_stations.close()
