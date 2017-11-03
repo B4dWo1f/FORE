@@ -37,14 +37,42 @@ def parse_data(RAW_DATA,tmp='/tmp/data.txt'):
    return np.hstack([N,M])
 
 
+def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M'):
+   m = min(DF.index.date)
+   min_year = m.year
+   min_month = m.month
+   m = max(DF.index.date)
+   max_year = m.year
+   max_month = m.month
+   for y in range(min_year,max_year+1):
+      fy = folder + str(y) + '/' 
+      com = 'mkdir -p %s'%(fy)
+      os.system(com)
+      for m in range(min_month,max_month+1):
+         fm = fy + str(m) + '/'
+         com = 'mkdir -p %s'%(fm)
+         os.system(com)
+         A = DATOS.loc[DATOS.index.year==y]
+         A = A[A.index.month==m]
+         A.to_csv(fm+station, date_format=fmt)
+
+
+
 base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
 folder = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m') + '/'
+folder = HOME+'/ZZZ/' + now.strftime('%Y/%m') + '/'
 os.system('mkdir -p %s'%(folder))
 s = ', '   # delimiter for the csv file
 
 
 f_stations = open(here+'/stations.csv','w')
+
+fmt = '%d/%m/%Y %H:%M'
+parser = lambda date: pd.datetime.strptime(date, fmt)
+names = ['dates','temperature','wind','wind dir','gust','gust dir',
+         'precipitation','pressure','pressure trend','humidity']
+
 
 html_doc = make_request(last_data)
 S = BeautifulSoup(html_doc, 'html.parser')
@@ -85,14 +113,18 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
             SAVE_DATA = '\n'.join(RAW_DATA.splitlines()[4:])
             with open('/tmp/station.csv','w') as f_out:
                f_out.write(SAVE_DATA+'\n')
-            old = pd.read_csv(folder+str(ind)+'.csv',delimiter=',',
-                              index_col=0,parse_dates=True,
-                              date_parser=parser,names=names)
+            try:
+               old = pd.read_csv(folder+str(ind)+'.csv',delimiter=',',
+                                 index_col=0,parse_dates=True,
+                                 date_parser=parser,names=names)
+            except OSError: old = pd.DataFrame()
             new = pd.read_csv('/tmp/station.csv',delimiter=',',
                               index_col=0,parse_dates=True,
                               date_parser=parser,names=names)
             DATOS = pd.concat([old,new])
+            DATOS = DATOS.sort_index()
             DATOS = DATOS.groupby(DATOS.index).mean()
+            DATOS.to_csv(folder+str(ind)+'.csv',date_format=fmt)
             exit()
             #f_out = open(folder+str(ind)+'.csv','a')
             #f_out.write(SAVE_DATA+'\n')
