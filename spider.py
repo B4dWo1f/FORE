@@ -47,7 +47,30 @@ def parse_data(RAW_DATA,tmp='/tmp/data.txt'):
    return np.hstack([N,M])
 
 
+def ck_folder(f):
+   """
+     Check if folder f exists and creat it if it doesn't
+   """
+   if not os.path.isdir(f):
+      com = 'mkdir -p %s'%(f)
+      LG.warning('Creating folder: %s'%(f))
+      os.system(com)
+   else: LG.debug('folder %s already existed'%(f))
+
+
 def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M'):
+   """
+     Save data frame splitting the data as follows:
+     folder
+       ;-year1
+       ;  `-month1
+       ;      ;-IND1.dat
+       ;      ;-IND2.dat
+       ;      `-IND3.dat
+       `-year2
+          ;-month2
+          `-month1
+   """
    m = min(DF.index.date)
    min_year = m.year
    min_month = m.month
@@ -55,36 +78,56 @@ def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M'):
    max_year = m.year
    max_month = m.month
    for y in range(min_year,max_year+1):
-      fy = folder + str(y) + '/' 
-      com = 'mkdir -p %s'%(fy)
-      os.system(com)
+      fy = folder + str(y) + '/'
+      ck_folder(fy)
       for m in range(min_month,max_month+1):
-         fm = fy + str(m) + '/'
-         com = 'mkdir -p %s'%(fm)
-         os.system(com)
-         A = DATOS.loc[DATOS.index.year==y]
+         fm = fy + '%02d/'%(m)
+         fname = fm+station+'.csv'
+         ck_folder(fm)
+         A = DF.loc[DF.index.year==y]
          A = A[A.index.month==m]
-         A.to_csv(fm+station, date_format=fmt)
+         try:
+            B = pd.read_csv(fname,delimiter=',', index_col=0,parse_dates=True,
+                            header=0,date_parser=parser,names=names)
+         except OSError: B = pd.DataFrame()
+         A = pd.concat([A,B])
+         A = A.sort_index()
+         A = A.groupby(A.index).mean()
+         #datos = datos.sort_index()
+         #datos = datos.groupby(datos.index).mean()
+         #datos.to_csv(folder+str(ind)+'.csv',date_format=fmt)
+         #save_by_date(DATOS,folder,station,fmt=fmt)
+         n,m = A.shape
+         LG.debug('Saving %s lines to %s'%(n,fm+station+'.csv'))
+         A.to_csv(fm+station+'.csv', date_format=fmt)
 
 
-
+## URL params
 base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
+
+## System setup
 folder = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m') + '/'
-folder = HOME+'/ZZZ/' + now.strftime('%Y/%m') + '/'
-os.system('mkdir -p %s'%(folder))
+folder = HOME+'/ZZZ/' # root folder for all the data
+#+ now.strftime('%Y/%m') + '/'
+ck_folder(folder)
+#os.system('mkdir -p %s'%(folder))
+
 s = ', '   # delimiter for the csv file
+ym = now.strftime('%Y/%m/')
 
 
 f_stations = open(here+'/stations.csv','w')
 
+
+## DataFrame parameters
 fmt = '%d/%m/%Y %H:%M'
 parser = lambda date: pd.datetime.strptime(date, fmt)
 names = ['dates','temperature','wind','wind dir','gust','gust dir',
          'precipitation','pressure','pressure trend','humidity']
 
 
-html_doc = make_request(last_data)
+html_doc = make_request(last_data) # Main web site
 S = BeautifulSoup(html_doc, 'html.parser')
 ## This loop runs over each comunidad autonoma
 for a in S.find_all('ul',class_="oculta_enlaces"):
@@ -96,7 +139,7 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
       html_doc = make_request(com_url)
       S_region = BeautifulSoup(html_doc, 'html.parser')
       for dato in S_region.find_all('a',class_="estacion_dato"):
-         LG.info(dato.text.lstrip().rstrip())
+         #LG.info(dato.text.lstrip().rstrip())
          url = dato['xlink:href'].replace('img','det')
          if '&'.join(com_url.split('&')[0:-1]).replace(base,'') in url:
             # To stop from rest of links
@@ -119,6 +162,7 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
                for lon in S_down.find_all('abbr',class_='longitude'):
                   lon = float(lon['title'])
             #print(ind,lat,lon,'',url_download)
+            LG.info('station: %s  (%.3f, %.3f)'%(ind,lat,lon))
             f_stations.write(str(ind)+s+str(lat)+s+str(lon))
             f_stations.write(s+url_download+'\n')
             LG.info(ind+': '+url_download)
@@ -127,18 +171,18 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
             with open('/tmp/station.csv','w') as f_out:
                f_out.write(SAVE_DATA+'\n')
             try:
-               old = pd.read_csv(folder+str(ind)+'.csv',delimiter=',',
-                                 index_col=0,parse_dates=True,
+               old = pd.read_csv(folder+ym+str(ind)+'.csv',delimiter=',',
+                                 index_col=0,parse_dates=True,header=0,
                                  date_parser=parser,names=names)
             except OSError: old = pd.DataFrame()
             new = pd.read_csv('/tmp/station.csv',delimiter=',',
-                              index_col=0,parse_dates=True,
+                              index_col=0,parse_dates=True,header=0,
                               date_parser=parser,names=names)
             DATOS = pd.concat([old,new])
             DATOS = DATOS.sort_index()
             DATOS = DATOS.groupby(DATOS.index).mean()
-            DATOS.to_csv(folder+str(ind)+'.csv',date_format=fmt)
-            exit()
+            #DATOS.to_csv(folder+str(ind)+'.csv',date_format=fmt)
+            save_by_date(DATOS,folder,ind,fmt='%d/%m/%Y %H:%M')
             #f_out = open(folder+str(ind)+'.csv','a')
             #f_out.write(SAVE_DATA+'\n')
             #f_out.close()
