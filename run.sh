@@ -5,7 +5,7 @@ BASEDIR=$(dirname "$0")
 cp $BASEDIR/stations.csv $BASEDIR/stations.csv.old
 
 # Download data
-$BASEDIR/spider.py > $HOME/spider.log 2>> $HOME/spider.log
+$BASEDIR/spider.py >> $HOME/spider.out 2>> $HOME/spider.err
 
 # Fix data (correct duplicates, etc)
 $BASEDIR/process.py 2> /dev/null
