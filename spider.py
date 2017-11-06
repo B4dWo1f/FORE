@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
+
 import pandas as pd
 import datetime as dt
 from urllib.request import Request, urlopen
@@ -13,9 +14,18 @@ here = os.path.dirname(os.path.realpath(__file__))
 HOME = os.getenv('HOME')
 now = dt.datetime.now()
 
+import logging
+LG = logging.getLogger('main')
+logging.basicConfig(level=logging.DEBUG,
+                 format='%(asctime)s %(name)s:%(levelname)s - %(message)s',
+                 datefmt='%Y/%m/%d-%H:%M:%S',
+                 filename=HOME+'/spider.log', filemode='w')
 
 
 def make_request(url):
+   """
+     Make http request
+   """
    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
    html_doc = urlopen(req)
    html_doc = html_doc.read().decode(html_doc.headers.get_content_charset())
@@ -79,12 +89,14 @@ S = BeautifulSoup(html_doc, 'html.parser')
 ## This loop runs over each comunidad autonoma
 for a in S.find_all('ul',class_="oculta_enlaces"):
    for link in a.find_all('a', href=True):
+      LG.info('Doing : %s'%(link.text))
       base_url = 'http://www.aemet.es/es/eltiempo/observacion/'
       com_url = base_url+link['href']
       #print('Doing:',com_url)
       html_doc = make_request(com_url)
       S_region = BeautifulSoup(html_doc, 'html.parser')
       for dato in S_region.find_all('a',class_="estacion_dato"):
+         LG.info(dato.text.lstrip().rstrip())
          url = dato['xlink:href'].replace('img','det')
          if '&'.join(com_url.split('&')[0:-1]).replace(base,'') in url:
             # To stop from rest of links
@@ -109,6 +121,7 @@ for a in S.find_all('ul',class_="oculta_enlaces"):
             #print(ind,lat,lon,'',url_download)
             f_stations.write(str(ind)+s+str(lat)+s+str(lon))
             f_stations.write(s+url_download+'\n')
+            LG.info(ind+': '+url_download)
             RAW_DATA = make_request(url_download).replace('"','')
             SAVE_DATA = '\n'.join(RAW_DATA.splitlines()[4:])
             with open('/tmp/station.csv','w') as f_out:
