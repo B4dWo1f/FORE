@@ -98,7 +98,7 @@ def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M'):
          #datos.to_csv(folder+str(ind)+'.csv',date_format=fmt)
          #save_by_date(DATOS,folder,station,fmt=fmt)
          n,m = A.shape
-         LG.debug('Saving %s lines to %s'%(n,fm+station+'.csv'))
+         LG.info('Saving %s lines to %s'%(n,fm+station+'.csv'))
          A.to_csv(fm+station+'.csv', date_format=fmt)
 
 
