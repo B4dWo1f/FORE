@@ -107,11 +107,8 @@ base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
 
 ## System setup
-folder = HOME+'/Documents/WeatherData/' + now.strftime('%Y_%m') + '/'
-folder = HOME+'/ZZZ/' # root folder for all the data
-#+ now.strftime('%Y/%m') + '/'
+folder = HOME+'/Documents/WeatherData1/'
 ck_folder(folder)
-#os.system('mkdir -p %s'%(folder))
 
 s = ', '   # delimiter for the csv file
 ym = now.strftime('%Y/%m/')
