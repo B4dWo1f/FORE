@@ -7,8 +7,8 @@ cp $BASEDIR/stations.csv $BASEDIR/stations.csv.old
 # Download data
 $BASEDIR/spider.py >> $HOME/spider.out 2>> $HOME/spider.err
 
-# Fix data (correct duplicates, etc)
-$BASEDIR/process.py 2> /dev/null
+## Fix data (correct duplicates, etc)  # Unnecessary after the pandas update
+#$BASEDIR/process.py 2> /dev/null      # to be removed
 
 # collect all the station information available
 cat $BASEDIR/stations.csv $BASEDIR/stations.csv.old | sort | uniq > $BASEDIR/stations.csv.1
@@ -16,8 +16,3 @@ cat $BASEDIR/stations.csv $BASEDIR/stations.csv.old | sort | uniq > $BASEDIR/sta
 # Clean
 mv $BASEDIR/stations.csv $BASEDIR/stations.csv.old
 mv $BASEDIR/stations.csv.1 $BASEDIR/stations.csv
-
-
-#### Old cron-job
-#31 */2 * * * cp $HOME/CODES/FORE/stations.csv $HOME/CODES/FORE/stations.csv.old && $HOME/CODES/FORE/spider.py > $HOME/spider.log && $HOME/CODES/FORE/process.py 2> /dev/null
-
