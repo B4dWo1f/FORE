@@ -1,6 +1,45 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import datetime as dt
+
+now = dt.datetime.now()
+today = now.date()
+
+fname = '/home/ngarcia/ZZZ/2017/11/7067Y.csv'
+
+
+## DataFrame parameters
+fmt = '%d/%m/%Y %H:%M'
+parser = lambda date: pd.datetime.strptime(date, fmt)
+names = ['dates','temperature','wind','wind dir','gust','gust dir',
+         'precipitation','pressure','pressure trend','humidity']
+fig, ax = plt.subplots()
+
+import IO
+import os
+files = os.popen('ls /home/ngarcia/ZZZ/2017/11/*.csv').read().splitlines()
+from random import shuffle
+
+shuffle(files)
+for fname in files:
+   print(fname)
+   print('')
+   os.system('head %s'%(fname))
+   print('')
+   print(len(names))
+   M = IO.aemet_csv(fname,cnvt=False)
+   X = M.index
+   Y = M['temperature']
+
+   ax.plot(X,Y)
+
+plt.show()
+exit()
 import datetime as dt
 import numpy as np
 from scipy.interpolate import CloughTocher2DInterpolator
