@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
+"""
+ Library with tools to plot weather conditions for a given time
+"""
+
 
 import numpy as np
 import pandas as pd
@@ -10,7 +14,6 @@ import datetime as dt
 now = dt.datetime.now()
 today = now.date()
 
-fname = '/home/ngarcia/ZZZ/2017/11/7067Y.csv'
 
 
 ## DataFrame parameters
@@ -22,7 +25,7 @@ fig, ax = plt.subplots()
 
 import IO
 import os
-files = os.popen('ls /home/ngarcia/ZZZ/2017/11/*.csv').read().splitlines()
+files = os.popen('ls /home/ngarcia/Documents/WeatherData2/2017/11/*.csv').read().splitlines()
 from random import shuffle
 
 shuffle(files)
