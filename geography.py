@@ -2,17 +2,17 @@
 # -*- coding: UTF-8 -*-
 
 from math import sin, cos, atan2, sqrt, radians,floor
+from shapely.geometry import Point
 
 class GPSpoint(object):
    def __init__(self,lat,lon,dodms=False):
       """
         This class can receive the lat,lon information in 2 ways:
-          - 2 float/integer numbers
+          - 2 float/integer numbers. Ex: (41.8, -8.1)
           - 2 tuples containing (degrees,minutes,seconds,direction)
-                [degrees]: integer
-                [minutes]: integer
-                [seconds]: float
-                [direction]: str
+                [degrees]: integer         [seconds]: float
+                [minutes]: integer         [direction]: str
+                Ex: [(41,51,44.8,'N'), (8,6,23.8,'W')]
       """
       try: LA,LO = tuple(map(float,[lat,lon]))
       except TypeError:
@@ -26,6 +26,9 @@ class GPSpoint(object):
       self.dd = self.gps
       if dodms: self.to_dms()
    def to_dms(self): self.dms = (dd2dms(self.lat),dd2dms(self.lon))
+   def in_region(self,region):
+      """ region must be a shapely.geometry.Polygon """
+      return region.contains(Point(self.lon,self.lat))
    def __sub__(self,other):
       """ Calculates the distance between 2 GPS points """
       return GPSdistance(self.gps[::-1],other.gps[::-1])
@@ -35,7 +38,7 @@ class GPSpoint(object):
 
 
 def dms2dd(deg,minu,sec):
-   """ Converts degree(with sign), minute, second to decimal """
+   """ Converts degree (with sign), minute, second to decimal """
    s = deg/abs(deg)
    return s*(abs(deg) + minu/60. + sec/3600.)
 
@@ -71,6 +74,22 @@ def GPSdistance(start, end, R0=6371):
    a = sin(d_latt/2)**2 + cos(start_latt) * cos(end_latt) * sin(d_long/2)**2
    c = 2 * atan2(sqrt(a), sqrt(1-a))
    return R0 * c
+
+
+def get_border(fname,ret_poly=True):
+   """
+     Returns either the border points of the interest region or the polygon
+     containing the interest region
+   """
+   Xb,Yb = np.loadtxt(fname,unpack=True)
+   if Xb[0] != Xb[-1]:
+      Xb = np.append(Xb,Xb[0])
+      Yb = np.append(Yb,Yb[0])
+   points = [(x,y) for x,y in zip(Xb,Yb)]
+   if ret_poly: 
+      from shapely.geometry.polygon import Polygon
+      return Polygon(points)
+   else: return points
 
 
 if __name__ == '__main__':

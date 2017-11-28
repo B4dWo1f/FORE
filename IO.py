@@ -1,16 +1,27 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
+"""
+This library is in charge of loading/saving data as well as particular data
+retrieval
+"""
+
 import os
+HOME = os.getenv('HOME')
+
 import numpy as np
 import pandas as pd
 import datetime as dt
+from scipy.interpolate import interp1d
+
+import geography as geo
 ## LOG
 import logging
 import log_help
 LG = logging.getLogger(__name__)
 
 ## DataFrame parameters
+fol_root = HOME+'/Documents/WeatherData/'
 fmt = '%d/%m/%Y %H:%M'
 parser = lambda date: pd.datetime.strptime(date, fmt)
 names = ['date','temperature','wind','wind dir','gust','gust dir',
@@ -28,6 +39,104 @@ types = {'dates':dt.datetime,
          'precipitation':float,
          'pressure':float, 'pressure trend':float,
          'humidity':float}
+fname = 'stations.csv'   
+M = pd.read_csv(fname, delimiter=',',names=['ID','lat','lon','url'])
+M = M[['ID','lon','lat']]
+points = [(x,y) for x,y in zip(M['lon'].values,M['lat'].values)]
+ids = M['ID'].values
+dict_stations = dict(zip(ids, points))
+del M,points,ids
+
+def get_stations(fname = 'stations.csv'):
+   """
+     Returns a pandas dataframe with the sations ID and (lon,lat) position
+   """
+   M = pd.read_csv(fname, delimiter=',',names=['ID','lat','lon','url'])
+   return M[['ID','lon','lat']]
+
+
+def get_data(date,place,prop=None,fol=fol_root,d=1,n=5):
+   """
+     Returns the closest data for that date and place (Interpolation in space
+     and time)
+     d = delta in time
+     n = number of stations to use
+   """
+   ## Fix props to return
+   if prop==None: props = names[1:]
+   elif isinstance(prop,str): props = [prop]
+   else: props = list(prop)
+   ## Find N closest stations
+   stations = get_stations()
+   IDs,dists = [],[]
+   for _, R in stations.iterrows():
+      IDs.append(R['ID'])
+      dists.append(geo.GPSdistance((R['lon'],R['lat']),place))
+   X = stations['lon'].values
+   Y = stations['lat'].values
+   IDs = np.array(IDs)
+   dists = np.array(dists)
+   inds = np.argsort(dists)
+
+   points = []
+   data,i = [],0
+   while len(data) < n and i<len(IDs):
+      ID = IDs[inds[i]]
+      data_station = get_data_from_station(ID,date,props)
+      aux = []
+      for a in data_station:
+         if a == a: aux.append(a)
+         else: aux.append(float('nan'))
+      points.append( (X[inds[i]],Y[inds[i]]) )
+      data.append(aux)
+      i += 1
+   x = [ix[0] for ix in points]
+   y = [ix[1] for ix in points]
+   from scipy.interpolate import CloughTocher2DInterpolator,LinearNDInterpolator
+   #f = CloughTocher2DInterpolator(points,data)
+   interps = []
+   for i in range(len(props)):
+      data_aux = []
+      points_aux = []
+      for ip in range(len(data)):
+         d = data[ip]
+         if d[i]==d[i]:
+            data_aux.append(d[i])
+            points_aux.append(points[ip])
+      interps.append(LinearNDInterpolator(points_aux,data_aux))
+   return [float(f(place)) for f in interps]
+
+def get_data_from_station(ID,date,prop=None,fol=fol_root,d=2):
+   """
+     Retrieve data (specific, or all of them) from a given station for a
+     specific time.
+     This function is equivalent to a interpolation in time for a given station
+     d: number of hours used for the interpolation
+   returning order:
+   temperature,wind,wind dir,gust,gust dir,precipitation,pressure,
+                                                       pressure trend,humidity
+   """
+   if prop==None: props = names[1:]
+   elif isinstance(prop,str): props = [prop]
+   else: props = list(prop)
+   d = dt.timedelta(hours=d)
+   x0 = pd.Timestamp(date).value
+   fname = fol_root+date.strftime('%Y/%m/') + '%s.csv'%(ID)
+   M = aemet_csv(fname,cnvt=False)
+   start = M.index.searchsorted(date-d)
+   end   = M.index.searchsorted(date+d)
+   df = M.ix[start:end]
+   aux = []
+   for prop in props:
+      x = [x.value for x in M.ix[start:end][prop].index]
+      y = M.ix[start:end][prop].values
+      if len(x) >= 2:
+         f = interp1d(x, y)  #TODO implement "kind"
+         a = float(f(x0))
+      else: a = float('nan')
+      aux.append(a)
+   return aux
+
 
 def ck_folder(f):
    """
