@@ -39,20 +39,24 @@ types = {'dates':dt.datetime,
          'precipitation':float,
          'pressure':float, 'pressure trend':float,
          'humidity':float}
-fname = 'stations.csv'   
-M = pd.read_csv(fname, delimiter=',',names=['ID','lat','lon','url'])
-M = M[['ID','lon','lat']]
-points = [(x,y) for x,y in zip(M['lon'].values,M['lat'].values)]
-ids = M['ID'].values
-dict_stations = dict(zip(ids, points))
-del M,points,ids
+#fname = 'stations.csv'   
+#M = pd.read_csv(fname, delimiter=',',names=['ID','lat','lon','url'])
+#M = M[['ID','lon','lat']]
+#points = [(x,y) for x,y in zip(M['lon'].values,M['lat'].values)]
+#ids = M['ID'].values
+#dict_stations = dict(zip(ids, points))
+#del M,points,ids
 
-def get_stations(fname = 'stations.csv'):
+def get_stations(fname='stations.csv',url=False):
    """
      Returns a pandas dataframe with the sations ID and (lon,lat) position
    """
-   M = pd.read_csv(fname, delimiter=',',names=['ID','lat','lon','url'])
-   return M[['ID','lon','lat']]
+   if url:
+      M = pd.read_csv(fname, delimiter=',',names=['ID','lat','lon','url'])
+      return M[['ID','lon','lat','url']]
+   else:
+      M = pd.read_csv(fname, delimiter=',',names=['ID','lat','lon'])
+      return M[['ID','lon','lat']]
 
 
 def get_data(date,place,prop=None,fol=fol_root,d=1,n=5):
