@@ -5,7 +5,7 @@
  Library with tools to plot weather conditions for a given time
 """
 
-import IO
+#import IO
 import datetime as dt
 import pandas as pd
 now = dt.datetime.now()
@@ -19,9 +19,13 @@ date = now - dt.timedelta(hours=24)
 #dict_stations = dict(zip(ids, points))
 
 
+import prepare_data as data
 
 p0 = -3,41
-A = IO.get_data(date,p0,['temperature','wind'],n=10)
+B = data.get_data_from_station('8270X',date,'temperature')
+print(B)
+
+A = data.get_data(date,p0,['temperature','wind'],n=10)
 print('back')
 print(A)
 

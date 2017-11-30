@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 from math import sin, cos, atan2, sqrt, radians,floor
+from scipy.spatial import ConvexHull
 from shapely.geometry import Point
 
 class GPSpoint(object):
@@ -80,6 +81,8 @@ def get_border(fname,ret_poly=True):
    """
      Returns either the border points of the interest region or the polygon
      containing the interest region
+     fname: file containing the gps coordinates of the border of the
+            region of interest
    """
    Xb,Yb = np.loadtxt(fname,unpack=True)
    if Xb[0] != Xb[-1]:
@@ -90,6 +93,20 @@ def get_border(fname,ret_poly=True):
       from shapely.geometry.polygon import Polygon
       return Polygon(points)
    else: return points
+
+
+def find_border(points,closed=True):
+   """
+     Returns the vertex of the convex hull of a given set of points
+   """
+   hull = ConvexHull(points)
+   vertices = []
+   for ind in hull.vertices:
+      vertices.append(points[ind])
+   if closed:
+      if any(vertices[0] != vertices[-1]): vertices.append(vertices[0])
+   return vertices
+
 
 
 if __name__ == '__main__':

@@ -1,96 +1,113 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
-import datetime as dt
+import IO
+import geography as geo
+import pandas as pd
 import numpy as np
+import datetime as dt
+from scipy.interpolate import interp1d
+from scipy.interpolate import CloughTocher2DInterpolator,LinearNDInterpolator
+## Sys params
 import os
 HOME = os.getenv('HOME')
-here = os.path.dirname(os.path.realpath(__file__))
 
-fol = HOME + '/Documents/WeatherData/'
-stations = here + 'stations.csv'
+
+## DataFrame parameters
+fol_root = HOME+'/Documents/WeatherData/'
 fmt = '%d/%m/%Y %H:%M'
+parser = lambda date: pd.datetime.strptime(date, fmt)
+names = ['date','temperature','wind','wind dir','gust','gust dir',
+         'precipitation','pressure','pressure trend','humidity']
 
 
-## Let's build an interpolator for a given space-time coordinate
-T0 = dt.datetime.now() - dt.timedelta(hours=8)
-T0 = T0 - dt.timedelta(hours=1)
-T0 = T0.replace(minute=0,second=0,microsecond=0)
-P0 = 40.951132, -4.323730, T0
+def get_stations(fname='stations.csv',url=False):
+   """
+     Returns a pandas dataframe with the sations ID and (lon,lat) position
+   """
+   M = pd.read_csv(fname, delimiter=',',header=0)
+   if url: return M[['ID','lon','lat','url']]
+   else: return M[['ID','lon','lat']]
 
 
-# Folder to use
-fols_months = os.popen('ls %s'%(fol)).read().splitlines()
-months = [dt.datetime.strptime(x, '%Y_%m') for x in fols_months]
+def get_data(date,place,prop=None,fol=fol_root,d=1,n=5):
+   """
+     Returns the closest data for that date and place (Interpolation in space
+     and time)
+     d = delta in time
+     n = number of stations to use
+   """
+   ## Fix props to return
+   if prop==None: props = names[1:]
+   elif isinstance(prop,str): props = [prop]
+   else: props = list(prop)
+   ## Find N closest stations
+   stations = get_stations()
+   IDs,dists = [],[]
+   for _, R in stations.iterrows():
+      IDs.append(R['ID'])
+      dists.append(geo.GPSdistance((R['lon'],R['lat']),place))
+   X = stations['lon'].values
+   Y = stations['lat'].values
+   IDs = np.array(IDs)
+   dists = np.array(dists)
+   inds = np.argsort(dists)
 
-now = dt.datetime.now() - dt.timedelta(hours=8)
-dist = [(now-x).total_seconds() for x in months]
-ind = np.argmin(dist)
-
-folder = fol + fols_months[ind]
-
-com = 'grep "%s" %s/*.csv'%(P0[2].strftime(fmt),folder)
-print(com)
-resp = os.popen(com).read().splitlines()
-f = open('/tmp/fore.csv','w')
-for l in resp:
-   ll = l.split(':')
-   id_station = ll[0].split('/')[-1].replace('.csv','')
-   data = ':'.join(ll[1:])
-   com = 'grep %s stations.csv'%(id_station)
-   gps = os.popen(com).read()
-   gps = list(map(float,gps.split(',')[1:3]))
-   lat,lon = gps
-   f.write(str(lat)+','+str(lon)+','+data+'\n')
-f.close()
-
-def parse_ST(fname = '/tmp/fore.csv'):
-   print(fname)
-   ## Read floats
-   Lat,Lon,T,W,dW,G,Gd,P,Pr,Prt,H = np.genfromtxt(fname, usecols=(0,1,3,4,5,6,7,8,9,10,11),
-                                                   delimiter=',',unpack=True)
-   return Lat,Lon,T,W,dW,G,Gd,P,Pr,Prt,H
-
-
-lat,lon,T,w,wd,g,gd,p,pr,prt,h = parse_ST()
-
-points,M = [],[]
-for i in range(len(T)):
-   t = T[i]
-   la = lat[i]
-   lo = lon[i]
-   if t==t :   # Not nan
-      points.append((lo,la))
-      M.append(t)
-
-from scipy.interpolate import CloughTocher2DInterpolator
-
-TEMPERATURE = CloughTocher2DInterpolator(points,M)
-print( TEMPERATURE((P0[1],P0[0])) )
-
-
-
+   points = []
+   data,i = [],0
+   while len(data) < n and i<len(IDs):
+      ID = IDs[inds[i]]
+      data_station = get_data_from_station(ID,date,props)
+      aux = []
+      for a in data_station:
+         if a == a: aux.append(a)
+         else: aux.append(float('nan'))
+      points.append( (X[inds[i]],Y[inds[i]]) )
+      data.append(aux)
+      i += 1
+   x = [ix[0] for ix in points]
+   y = [ix[1] for ix in points]
+   #f = CloughTocher2DInterpolator(points,data)
+   interps = []
+   for i in range(len(props)):
+      data_aux = []
+      points_aux = []
+      for ip in range(len(data)):
+         d = data[ip]
+         if d[i]==d[i]:
+            data_aux.append(d[i])
+            points_aux.append(points[ip])
+      interps.append(LinearNDInterpolator(points_aux,data_aux))
+   return [float(f(place)) for f in interps]
 
 
-exit()
-#files = os.popen('ls %s/*.csv'%(folder)).read().splitlines()
-
-
-t_forecast = now.replace(minute=0,second=0,microsecond=0)
-n = 3  #number of previous hours as input
-
-print('Forecast for:',t_forecast)
-print('Inputs')
-for i in range(1,n+1):
-   t = t_forecast - dt.timedelta(hours=i)
-   com = 'grep "%s" %s/*.csv'%(t.strftime(fmt),folder)
-   print(com)
-   data = os.popen(com).read().splitlines()
-   #data = [':'.join(x.split(':')[1:]) for x in data]
-   for l in data:
-      id_station = l.split(':')[0].split('/')[-1].replace('.csv','')
-      com = 'grep %s stations.csv'%(id_station)
-      gps = os.popen(com).read()
-      gps = list(map(float,gps.split(',')[1:3]))
-      lat,lon = gps
-      print('',id_station,lat,lon,':'.join(l.split(':')[1:]))
+def get_data_from_station(ID,date,prop=None,fol=fol_root,d=2):
+   """
+     Retrieve data (specific, or all of them) from a given station for a
+     specific time.
+     This function is equivalent to a interpolation in time for a given station
+     d: number of hours used for the interpolation
+   returning order:
+   temperature,wind,wind dir,gust,gust dir,precipitation,pressure,
+                                                      pressure trend,humidity
+   """
+   if prop==None: props = names[1:]
+   elif isinstance(prop,str): props = [prop]
+   else: props = list(prop)
+   d = dt.timedelta(hours=d)
+   x0 = pd.Timestamp(date).value
+   fname = fol_root+date.strftime('%Y/%m/') + '%s.csv'%(ID)
+   M = IO.aemet_csv(fname,cnvt=False)
+   start = M.index.searchsorted(date-d)
+   end   = M.index.searchsorted(date+d)
+   df = M.ix[start:end]
+   aux = []
+   for prop in props:
+      x = [x.value for x in M.ix[start:end][prop].index]
+      y = M.ix[start:end][prop].values
+      if len(x) >= 2:
+         f = interp1d(x, y)  #TODO implement "kind"
+         a = float(f(x0))
+      else: a = float('nan')
+      aux.append(a)
+   return aux

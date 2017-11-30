@@ -56,12 +56,13 @@ last_data = base+'/es/eltiempo/observacion/ultimosdatos'
 folder = HOME + '/Documents/WeatherData2/'
 IO.ck_folder(folder)
 
-s = ', '   # delimiter for the csv file
+s = ','   # delimiter for the csv file
 ym = now.strftime('%Y/%m/')
 t0 = 0
 
 
 f_stations = open(here+'/stations.csv','w')
+f_stations.write('ID,lat,lon,url\n')
 
 
 ## DataFrame parameters
