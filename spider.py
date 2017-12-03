@@ -53,7 +53,7 @@ base = 'http://www.aemet.es'
 last_data = base+'/es/eltiempo/observacion/ultimosdatos'
 
 ## System setup
-folder = HOME + '/Documents/WeatherData2/'
+folder = HOME + '/Documents/WeatherData/'
 IO.ck_folder(folder)
 
 s = ','   # delimiter for the csv file
