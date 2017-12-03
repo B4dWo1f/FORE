@@ -211,4 +211,5 @@ def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M',head=True,cnvt=False):
          A = A.groupby(A.index).mean()
          n,m = A.shape
          LG.info('Saving %s lines to %s'%(n,fm+station+'.csv'))
-         A.to_csv(fm+station+'.csv', date_format=fmt)
+         A.to_csv(fm+station+'.csv', date_format=fmt,header=True,
+                                                            columns=names[1:])
