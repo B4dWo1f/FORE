@@ -9,10 +9,7 @@ Other scripts to visualize are being developed.
 Fully connected or LSTM Neural Networks will be used to actuall predictions
 
 ## Dependencies
-pandas package is used to handle the data and save/load to files taking care of repetitions, nans...
-
-
-pandas can be simple installed as
+pandas package is used to handle the data and save/load to files taking care of repetitions, nans... the pandas package can be simply installed as
 
 sudo apt-get install python3-pandas
 
