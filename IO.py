@@ -188,28 +188,32 @@ def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M',head=True,cnvt=False):
           ;-month2
           `-month1
    """
-   m = min(DF.index.date)
-   min_year = m.year
-   min_month = m.month
-   m = max(DF.index.date)
-   max_year = m.year
-   max_month = m.month
-   for y in range(min_year,max_year+1):
-      fy = folder + str(y) + '/'
-      ck_folder(fy)
-      for m in range(min_month,max_month+1):
-         fm = fy + '%02d/'%(m)
-         fname = fm+station+'.csv'
-         ck_folder(fm)
-         A = DF.loc[DF.index.year==y]
-         A = A[A.index.month==m]
-         ## Try to merge with previously existing data
-         try: B = aemet_csv(fname,head=head,cnvt=False)
-         except OSError: B = pd.DataFrame()
-         A = pd.concat([A,B])
-         A = A.sort_index()
-         A = A.groupby(A.index).mean()
-         n,m = A.shape
-         LG.info('Saving %s lines to %s'%(n,fm+station+'.csv'))
-         A.to_csv(fm+station+'.csv', date_format=fmt,header=True,
-                                                            columns=names[1:])
+   ## generate all the dates
+   ds = [min(DF.index.date), max(DF.index.date)]
+   current = min(ds)
+   dates = [current]
+   while current < max(ds):
+      next_month = (current.month+1)%12
+      if next_month < current.month:
+         current = current.replace(year=current.year+1)
+         current = current.replace(month=(current.month+1)%12)
+      else: current = current.replace(month=(current.month+1)%12)
+      dates.append(current)
+
+   for d in dates:
+      fm = folder + d.strftime('%Y/%m') + '/'
+      fname = fm+station+'.csv'
+      y,m = d.year,d.month
+      ck_folder(fm)
+      A = DF.loc[DF.index.year==y]
+      A = A[A.index.month==m]
+      ## Try to merge with previously existing data
+      try: B = aemet_csv(fname,head=head,cnvt=False)
+      except OSError: B = pd.DataFrame()
+      A = pd.concat([A,B])
+      A = A.sort_index()
+      A = A.groupby(A.index).mean()
+      n,m = A.shape
+      LG.info('Saving %s lines to %s'%(n,fm+station+'.csv'))
+      A.to_csv(fm+station+'.csv', date_format=fmt,header=True,
+                                                         columns=names[1:])
