@@ -189,7 +189,8 @@ def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M',head=True,cnvt=False):
           `-month1
    """
    ## generate all the dates
-   ds = [min(DF.index.date), max(DF.index.date)]
+   ds = [min(DF.index.date), max(DF.index.date)] # shame of your ancestors!!!
+   ds = [x.replace(day=1) for x in ds]           # TODO Fix this
    current = min(ds)
    dates = [current]
    while current < max(ds):
