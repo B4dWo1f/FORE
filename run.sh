@@ -16,3 +16,5 @@ cat $BASEDIR/stations.csv $BASEDIR/stations.csv.old | sort | uniq > $BASEDIR/sta
 # Clean
 mv $BASEDIR/stations.csv $BASEDIR/stations.csv.old
 mv $BASEDIR/stations.csv.1 $BASEDIR/stations.csv
+
+notify-send "Weather data retrieved"
