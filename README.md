@@ -6,16 +6,16 @@ spider.py is (my first) spider which crawls over the Aemet observation stations 
 
 Other scripts to visualize are being developed.
 
-Fully connected or LSTM Neural Networks will be used to actuall predictions
 
 ## Dependencies
-pandas package is used to handle the data and save/load to files taking care of repetitions, nans... the pandas package can be simply installed as
+pandas package is used to handle the data and save/load to/from files taking care of repetitions, nans... the pandas package can be simply installed as
 
+```
 sudo apt-get install python3-pandas
-
+```
 
 ## TO-DO
-- [ ] log level should go to info
+- [ ] log level should go to config.ini
 - [ ] parser/header in the functions should be self-contained
-- [ ] Clean the repository of old/useless scripts
-- [ ] Use pandas in the plotting scripts
+- [X] Clean the repository of old/useless scripts
+- [X] Use pandas in the plotting scripts
