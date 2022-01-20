@@ -6,7 +6,6 @@ import IO
 import web
 import pandas as pd
 import datetime as dt
-from tqdm import tqdm
 import os
 here = os.path.dirname(os.path.realpath(__file__))
 HOME = os.getenv('HOME')
@@ -53,7 +52,7 @@ stations = web.update_stations(stations, P)
 
 
 LG.info('Downloading data')
-for index, row in tqdm(stations.iterrows(),total=stations.shape[0]):
+for index, row in stations.iterrows(),total=stations.shape[0]:
    LG.debug(f"Doing station: {row['code']}. Updated: {row['date']}")
    RAW_DATA = web.make_request(row['url']).replace('"','').strip()
    IO.merge_data(folder,row['code'],RAW_DATA)

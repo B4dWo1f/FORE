@@ -7,7 +7,6 @@ from urllib.error import URLError
 from bs4 import BeautifulSoup
 import datetime as dt
 import pandas as pd
-from tqdm import tqdm
 ## LOG
 import logging
 # import log_help
@@ -101,7 +100,7 @@ def update_stations(stations,config_params,fname='stations.csv'):
              'noviembre':'Nov',   'december':'Dec'}
    LG.info('Getting the data')
    url_downloads = []
-   for ccaa,code,name in tqdm(stations):
+   for ccaa,code,name in stations:
       url = f'{config_params.url_base}?k={ccaa}&l={code}&w=0&datos=det'
       LG.debug(f'station: {url}')
       html_doc = make_request(url) # Main web site
