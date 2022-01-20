@@ -52,7 +52,7 @@ stations = web.update_stations(stations, P)
 
 
 LG.info('Downloading data')
-for index, row in stations.iterrows(),total=stations.shape[0]:
+for index, row in stations.iterrows():
    LG.debug(f"Doing station: {row['code']}. Updated: {row['date']}")
    RAW_DATA = web.make_request(row['url']).replace('"','').strip()
    IO.merge_data(folder,row['code'],RAW_DATA)
