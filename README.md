@@ -8,7 +8,7 @@ Other scripts to visualize are being developed.
 
 
 ## Dependencies
-pandas package is used to handle the data and save/load to/from files taking care of repetitions, nans... the pandas package can be simply installed as
+[pandas](https://pandas.pydata.org/docs/) package is used to handle the data and save/load to/from files taking care of repetitions, nans... the pandas package can be simply installed as
 
 ```
 sudo apt-get install python3-pandas
