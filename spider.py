@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import load
+log_level = load.get_log_level()
 import IO
 import web
 import pandas as pd
@@ -10,10 +11,13 @@ import os
 here = os.path.dirname(os.path.realpath(__file__))
 HOME = os.getenv('HOME')
 
-#################################################################################
+################################################################################
 import logging
 LG = logging.getLogger('main')
-logging.basicConfig(level=logging.DEBUG,
+lg_lvls = {'debug':logging.DEBUG, 'info':logging.INFO,
+           'warning':logging.WARNING, 'error':logging.ERROR,
+           'critical':logging.CRITICAL}
+logging.basicConfig(level=lg_lvls[log_level]
                  format='%(asctime)s %(name)s:%(levelname)s - %(message)s',
                  datefmt='%Y/%m/%d-%H:%M:%S',
                  filename=f'{here}/spider.log', filemode='w')
@@ -24,7 +28,7 @@ sh.setLevel(lv)
 fmt = logging.Formatter(fmt)
 sh.setFormatter(fmt)
 LG.addHandler(sh)
-#################################################################################
+################################################################################
 
 
 ## Config
