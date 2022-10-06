@@ -145,7 +145,8 @@ def save_by_date(DF,folder,station,fmt='%d/%m/%Y %H:%M',head=True,cnvt=False):
       except OSError: B = pd.DataFrame()
       A = pd.concat([A,B])
       A = A.sort_index()
-      A = A.groupby(A.index).mean()
+      # A = A.groupby(A.index).mean()
+      A = A.groupby(A.index).tail(1)
       n,m = A.shape
       LG.info(f'Saving {n} lines to {fname}')
       A.to_csv(fname, date_format=fmt,header=True, columns=names[1:])
