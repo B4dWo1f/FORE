@@ -62,6 +62,17 @@ def setup(fname='config.ini'):
    url_base = config['aemet']['url_base']
    return params(folder_data,stations,fmt,url_root,url_base)
 
+def get_log_level(fname='config.ini'):
+   """
+    Parse just the log level from the config file
+    Not elegant but functional
+   """
+   config = ConfigParser(inline_comment_prefixes='#')
+   config._interpolation = ExtendedInterpolation()
+   config.read(fname)
+   return config['config']['log_level'].lower()
+
+
 if __name__ == '__main__':
    P = setup(fname='config.ini')
    print(P)
