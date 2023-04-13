@@ -70,7 +70,7 @@ def get_log_level(fname='config.ini'):
    config = ConfigParser(inline_comment_prefixes='#')
    config._interpolation = ExtendedInterpolation()
    config.read(fname)
-   return config['config']['log_level']
+   return config['config']['log_level'].lower()
 
 
 if __name__ == '__main__':

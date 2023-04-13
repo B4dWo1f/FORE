@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
-from random import shuffle
+# from random import shuffle
 from urllib.request import Request, urlopen
 from urllib.error import URLError
 from bs4 import BeautifulSoup
@@ -20,6 +20,7 @@ def make_request(url, maxN=10):
    Make http request, trying maxN times
    """
    LG.debug(f'Getting html from: {url}')
+   HTMLdoc = None
    cont,out = 0,False
    while not out:
       try:
@@ -36,21 +37,26 @@ def make_request(url, maxN=10):
       try:
          HTMLdoc = HTMLdoc.decode(header.get_content_charset(), errors='ignore')
       except TypeError: HTMLdoc = HTMLdoc.decode()
-      except: HTMLdoc = HTMLdoc.decode()
+      except: pass #HTMLdoc = HTMLdoc.decode()
       if cont >= maxN:
          LG.critical(f'Unable to download from {url} after {cont} attempts')
+         out = True
+         # raise
    return HTMLdoc
 
 
 def get_all_stations(url_base,write=True):
    """
-   This function returns a list of all the available stations
+   This function returns a list of all the available stations starting at 
+   El Tiempo > Observacion > Hoy y ultimos dias
+     https://www.aemet.es/es/eltiempo/observacion/ultimosdatos
    """
    LG.info('Getting all the comunidades')
    html_doc = make_request(url_base) # Main web site
    # print(html_doc)
    S = BeautifulSoup(html_doc, 'html.parser')
-   # Look for all the provinces
+   # Look for all the provinces in the Comunidad Autonoma menu
+   # (at the bottom of the page)
    ccaas = S.find('select',{'id':'ccaa_selector'})
    comunidades = []
    for ccaa in ccaas.findAll('option'):
@@ -63,7 +69,8 @@ def get_all_stations(url_base,write=True):
    LG.info('Retrieving stations')
    # shuffle(comunidades)
    stations = []
-   for abbre,name in comunidades:
+   from tqdm import tqdm
+   for abbre,name in tqdm(comunidades):
       stations += get_stations_ccaa(abbre, url_base)
       LG.debug(f'{len(stations)} stations from {name}')
    return stations  #XXX

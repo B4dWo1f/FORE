@@ -122,7 +122,7 @@ if __name__ == '__main__':
    start_date = end_date - dt.timedelta(hours=24)
 
    from random import choice
-   Xstation = choice(os.popen(f'ls ~/Documents/WeatherData/2022/01').read().strip().split())
+   Xstation = choice(os.popen(f'ls ~/Documents/WeatherData/2023/04').read().strip().split())
    #station = 'C929I.csv'
    code = Xstation.replace('.csv','')
    print('Doing',code)
