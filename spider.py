@@ -56,6 +56,7 @@ LG.info(f'Starting: {__file__}')
 ## Config
 P = load.setup(f'{here}/config.ini')
 folder = P.folder_data
+fname_stations = P.stations
 IO.ck_folder(folder)
 fname = P.stations
 fmt = P.fmt
@@ -64,7 +65,7 @@ fmt = P.fmt
 LG.info('Updating stations')
 stations = web.get_all_stations(P.url_base,write=True)
 LG.info(f'Parsing {len(stations)} stations')
-stations = web.update_stations(stations, P)
+stations = web.update_stations(stations, P, fname=fname_stations)
 LG.info(f'Parsed stations')
 
 
